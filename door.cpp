@@ -17,18 +17,13 @@ struct msgBuffer {
 
 int main() {
     int choose;
-    /*
-    Tryby pracy:
-        [1] Sport       35' 90min
-        [2] Koszule     40' 115min
-        [3] Reczne      30' 30min
-        [4] Syntetyki   50' 70min
-    */
     string operation = "";
-    string washingModes[] = {"Sport's wash", "Shirt wash", "Hand wash", "Synthetics wash"};
     key_t myKey;
     int msgID;
-    myKey = ftok("progfile", 65); //create unique key
+    
+    /* *** SENDING *** */ 
+    
+    myKey = ftok("/usr", 65); //create unique key
     msgID = msgget(myKey, 0666 | IPC_CREAT); //create message queue and return id
     
     message.msgType = 1;
@@ -39,10 +34,15 @@ int main() {
     } while (operation.compare("closed"));
     operation = "Door closed";
 
+    
     strcpy(message.msgContent, operation.c_str());   
     msgsnd(msgID, &message, sizeof(message), 0); //send message
     printf("\nSent message: %s \n", message.msgContent); 
 
+
+    /* *** PREPARING *** */ 
+
+    usleep(2000000); 
     printf("Choose washing mode [0-4] \n");
     printf("    [0] Ordinary wash:   40'C and 90min\n");
     printf("    [1] Sport's wash:    35'C and 80min\n");
@@ -79,16 +79,35 @@ int main() {
     printf("\nSending selected mode to heater: %s \n", message.msgContent);  
 
     printf("Washing in progress.\n");
+
+
+    /* *** RECEIVING *** */ 
+
+    myKey = ftok("/boot", 67); //create unique key
+    msgID = msgget(myKey, 0666 | IPC_CREAT); //create message queue and return id
+
     msgrcv(msgID, &message, sizeof(message), 4, 0);
-    printf("Received Message is : %s \n", message.msgContent);
+    operation = message.msgContent;
+    if(operation.find("fail") != string::npos) {
+            printf("Received error message: %s \n", message.msgContent);
+            message.msgType = 1;
+            myKey = ftok("/usr", 65); //create unique key
+            msgID = msgget(myKey, 0666 | IPC_CREAT); //create message queue and return id
+            msgsnd(msgID, &message, sizeof(message), 0); //send message
+            
+            exit(-1);
+    }
+    printf("Received message is : %s \n", message.msgContent);
     msgctl(msgID, IPC_RMID, NULL); //destroy the message queue
+    usleep(1000000); 
+    
+    printf("You can open the door now\n");
+    while (operation.compare("open")) {
+        printf("Open the door [open]: ");
+        getline(cin, operation);
+    } 
     usleep(5000000); 
 
-    printf("You can open the door now\n");
-    do {
-        printf("Open the door [open] : ");
-        getline(cin, operation);
-    } while (operation.compare("open"));
-    usleep(5000000); 
     printf("Have a nice day with your clean loundry!\n");
+
 }
