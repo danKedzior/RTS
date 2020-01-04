@@ -102,8 +102,9 @@ int main() {
     usleep(1000000); 
     
     printf("You can open the door now\n");
+    printf("Open the door [open]: ");
+    
     while (operation.compare("open")) {
-        printf("Open the door [open]: ");
         getline(cin, operation);
     } 
     usleep(5000000); 

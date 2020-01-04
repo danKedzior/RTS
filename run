@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+cmds=('door' 'heater' 'pump' 'rotor')
+path=$(pwd)
+
+for i in "${cmds[@]}"
+do
+    xterm -hold -e "$path/$i" &
+done
