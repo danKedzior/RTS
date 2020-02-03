@@ -87,7 +87,7 @@ int main() {
     } 
     else {
         printf("\n");
-        printf("Water pumped successfully!\n");
+        printf("Washing completed!\n");
         
         /* *** SENDING *** */
         
